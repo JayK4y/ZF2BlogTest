@@ -12,6 +12,8 @@ use Zend\Db\Adapter\AdapterInterface;
 use Zend\Db\Adapter\Driver\ResultInterface;
 use Zend\Db\ResultSet\HydratingResultSet;
 use Zend\Db\Sql\Sql;
+use Zend\Db\Sql\Update;
+use Zend\Db\Sql\Insert;
 use Zend\Stdlib\Hydrator\HydratorInterface;
 
 class ZendDbSqlMapper implements PostMapperInterface
@@ -63,5 +65,43 @@ class ZendDbSqlMapper implements PostMapperInterface
             return $resultSet->initialize($result);
         }
         return array();
+    }
+    
+    public function save(PostInterface $postObject)
+    {
+        $postData = $this->hydrator->extract($postObject);
+        // ID not needed for Insert nor Update
+        unset($postData['id']);
+        
+        if ($postObject->getId())
+        {
+            // ID present, it's an Update
+            $action = new Update('posts');
+            $action->set($postData);
+            $action->where(array('id = ?' => $postObject->getId()));
+        }
+        else
+        {
+            // ID NOT present, it's an Insert
+            $action = new Insert('posts');
+            $action->values($postData);
+        }
+        
+        $sql = new Sql($this->dbAdapter);
+        $stmt= $sql->prepareStatementForSqlObject($action);
+        $result = $stmt->execute();
+        
+        if ($result instanceof ResultInterface)
+        {
+            if ($newId = $result->getGeneratedValue())
+            {
+                //When a value has been generated, set it on the object
+                $postObject->setId($newId);
+            }
+            
+            return $postObject;
+        }
+        
+        throw new \Exception("Database error");
     }
 }

@@ -12,4 +12,6 @@ interface PostMapperInterface
     public function find($id);
     
     public function findAll();
+    
+    public function save(PostInterface $postObject);
 }

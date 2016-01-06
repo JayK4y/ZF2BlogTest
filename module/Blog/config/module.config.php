@@ -54,7 +54,7 @@ return array(
                     'add' => array(
                         'type' => 'literal',
                         'options' => array(
-                            'route' => '/add',
+                            'route' => 'add',
                             'defaults' => array(
                                 'controller' => 'Blog\Controller\Write',
                                 'action' => 'add'
