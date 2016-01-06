@@ -14,4 +14,6 @@ interface PostMapperInterface
     public function findAll();
     
     public function save(PostInterface $postObject);
+    
+    public function delete(PostInterface $postObject);
 }
